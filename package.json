@@ -1,0 +1,52 @@
+{
+  "name": "kantinazo",
+  "version": "1.0.0",
+  "description": "Kantinazo: acceso a HaxBall desde una aplicación de escritorio.",
+  "main": "main.js",
+  "author": "Kantinazo",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir --publish never",
+    "dist": "electron-builder --win nsis --publish never"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.kantinazo.app",
+    "productName": "Kantinazo",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "styles/**",
+      "scripts/**",
+      "assets/**"
+    ],
+    "icon": "assets/icon.png",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Kantinazo",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "artifactName": "Kantinazo-Setup-${version}.${ext}"
+  }
+}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kantinazo</title>
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+  <canvas id="bg" aria-hidden="true"></canvas>
+
+  <!-- Pantalla de bienvenida -->
+  <section id="welcome" class="screen">
+    <h1 class="title"><span>Bienvenido</span> <span>Kantinazo</span></h1>
+    <p class="subtitle">Tu acceso al mundo de HaxBall</p>
+    <button id="enter" class="btn-primary" type="button">ENTRAR</button>
+  </section>
+
+  <!-- Aplicación -->
+  <div id="app" class="hidden">
+    <nav class="sidebar" aria-label="Menú principal">
+      <div class="brand">Kantinazo</div>
+      <button class="nav-btn" data-view="inicio" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg><span>Inicio</span>
+      </button>
+      <button class="nav-btn" data-view="salas" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Salas</span>
+      </button>
+      <button class="nav-btn" data-view="favoritos" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><span>Favoritos</span>
+      </button>
+      <button class="nav-btn" data-view="jugar" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg><span>Jugar</span>
+      </button>
+      <button class="nav-btn" data-view="ajustes" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg><span>Ajustes</span>
+      </button>
+      <div class="spacer"></div>
+      <button id="back-welcome" class="nav-btn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Volver a la pantalla inicial</span>
+      </button>
+    </nav>
+
+    <main class="content">
+      <div id="offline" class="banner hidden" role="status">Sin conexión a internet. Las salas necesitan conexión para cargar.</div>
+
+      <!-- Inicio -->
+      <section class="view" data-view="inicio">
+        <h2 class="view-title">Kantinazo</h2>
+        <p class="lead">El HaxBall original, dentro de tu propia ventana.</p>
+        <div class="actions">
+          <button class="btn-primary" data-goto="salas" type="button">Ver salas</button>
+          <button class="btn-ghost" data-goto="jugar" type="button">Jugar</button>
+          <button class="btn-ghost" data-goto="favoritos" type="button">Favoritos</button>
+        </div>
+        <dl class="facts">
+          <div><dt>Salas</dt><dd>Es la lista oficial de HaxBall, cargada tal cual dentro de la app.</dd></div>
+          <div><dt>Partidas</dt><dd>Es el juego real: físicas, equipos, chat y los jugadores de la web oficial.</dd></div>
+          <div><dt>Favoritos</dt><dd>Se guardan en este equipo con el enlace de cada sala.</dd></div>
+          <div><dt>Límite</dt><dd>HaxBall no ofrece una API pública de salas. Por eso Kantinazo no puede leer, buscar ni filtrar la lista por su cuenta: eso lo hace el cliente oficial.</dd></div>
+        </dl>
+      </section>
+
+      <!-- Salas y Jugar comparten el cliente oficial -->
+      <section class="view hidden" data-view="game">
+        <header class="game-head">
+          <div>
+            <h2 id="game-title" class="view-title">Salas</h2>
+            <p id="game-text" class="muted"></p>
+          </div>
+          <div class="toolbar">
+            <button id="g-list" class="btn-ghost" type="button">Volver al listado</button>
+            <button id="g-reload" class="btn-ghost" type="button">Recargar</button>
+            <button id="g-external" class="btn-ghost" type="button">Abrir en el navegador</button>
+          </div>
+        </header>
+        <form id="join-form" class="inline-form hidden" autocomplete="off">
+          <label class="sr-only" for="join-url">Enlace de la sala</label>
+          <input id="join-url" type="text" placeholder="https://www.haxball.com/play?c=..." spellcheck="false">
+          <button class="btn-primary" type="submit">Entrar a la sala</button>
+        </form>
+        <p id="join-msg" class="msg hidden" role="alert"></p>
+        <p id="game-status" class="status" role="status"></p>
+        <div id="stage" class="stage">
+          <div id="stage-error" class="stage-error hidden">
+            <h3>No se pudo conectar con HaxBall</h3>
+            <p id="stage-error-text"></p>
+            <button id="g-retry" class="btn-primary" type="button">Reintentar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Favoritos -->
+      <section class="view hidden" data-view="favoritos">
+        <h2 class="view-title">Favoritos</h2>
+        <p class="muted">Guardá el enlace de una sala para entrar con un clic.</p>
+        <form id="fav-form" class="inline-form" autocomplete="off">
+          <label class="sr-only" for="fav-name">Nombre de la sala</label>
+          <input id="fav-name" type="text" maxlength="60" placeholder="Nombre de la sala">
+          <label class="sr-only" for="fav-url">Enlace de la sala</label>
+          <input id="fav-url" type="text" placeholder="https://www.haxball.com/play?c=..." spellcheck="false">
+          <button class="btn-primary" type="submit">Guardar sala</button>
+        </form>
+        <p id="fav-msg" class="msg hidden" role="alert"></p>
+        <ul id="fav-list" class="fav-list"></ul>
+        <p id="fav-empty" class="empty hidden">Todavía no guardaste salas. Pegá el enlace de una sala, ponele un nombre y guardala.</p>
+      </section>
+
+      <!-- Ajustes -->
+      <section class="view hidden" data-view="ajustes">
+        <h2 class="view-title">Ajustes</h2>
+        <div class="settings">
+          <label class="row"><span>Animaciones<small>Fondo animado y transiciones.</small></span><input id="s-anim" type="checkbox"></label>
+          <label class="row"><span>Saltar la bienvenida<small>Abrir directo en el menú.</small></span><input id="s-skip" type="checkbox"></label>
+          <label class="row"><span>Zoom del juego<small id="s-zoom-label"></small></span><input id="s-zoom" type="range" min="0.6" max="1.6" step="0.1"></label>
+          <div class="row"><span>Datos del juego<small>Borra el apodo, el avatar y la sesión guardados por HaxBall en esta app.</small></span><button id="s-clear" class="btn-ghost" type="button">Borrar datos</button></div>
+        </div>
+        <p id="s-msg" class="msg hidden" role="status"></p>
+        <p id="about" class="muted about"></p>
+      </section>
+    </main>
+  </div>
+
+  <script src="scripts/background.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>
