@@ -1,19 +1,42 @@
+
 name: Crear instalador de Kantinazo
+
 on:
   workflow_dispatch:
   push:
     branches: [main]
+
 jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npm run dist
-      - uses: actions/upload-artifact@v4
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Revisar dependencias
+        run: npm audit --omit=dev
+        continue-on-error: true
+
+      - name: Crear instalador
+        run: npm run dist
+
+      - name: Calcular hash SHA256
+        shell: pwsh
+        run: |
+          Get-FileHash dist/Kantinazo-Setup-*.exe -Algorithm SHA256 | Format-List | Out-File dist/VERIFICACION.txt
+
+      - name: Subir instalador e informe
+        uses: actions/upload-artifact@v4
         with:
-          name: Kantinazo-Setup
-          path: dist/Kantinazo-Setup-*.exe
+          name: Kantinazo-Instalador-y-Verificacion
+          path: |
+            dist/Kantinazo-Setup-*.exe
+            dist/VERIFICACION.txt
